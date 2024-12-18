@@ -1,0 +1,79 @@
+size = int(input("Enter size of table: "))
+seperate_chaining_table = [[] for _ in range(size)]
+linear_probing_key = [None] * size
+linear_probing_value = [None] * size
+
+# Hash function
+def hash_fun(key):
+    return hash(key) % size
+
+# Insert using Separate Chaining
+def insert_seperate_chaining(key, value):
+    index = hash_fun(key)
+    seperate_chaining_table[index].append((key, value))
+    print(f"\nInserted {key}:{value} using separate chaining at index: {index}")
+
+# Insert using Linear Probing
+def insert_linear_probing(key, value):
+    index = hash_fun(key)
+    while linear_probing_key[index] is not None:
+        index = (index + 1) % size  # Corrected here
+    linear_probing_key[index] = key
+    linear_probing_value[index] = value
+    print(f"\nInserted {key}:{value} using linear probing at index: {index}")
+
+# Search using Separate Chaining
+def search_seperate(key):
+    index = hash_fun(key)
+    for k, v in seperate_chaining_table[index]:
+        if key == k:
+            return v
+    return None
+
+# Search using Linear Probing
+def search_linear(key):
+    index = hash_fun(key)
+    while linear_probing_key[index] is not None:
+        if linear_probing_key[index] == key:
+            return linear_probing_value[index]
+        index = (index + 1) % size
+    return None
+
+# Input data
+no = int(input("Enter total number of clients: "))
+client_no = {}
+
+for i in range(no):
+    name = input("Enter name: ")
+    number = input("Enter number: ")
+    client_no[name] = number
+
+# Insert into tables
+for name, number in client_no.items():
+    insert_seperate_chaining(name, number)
+    insert_linear_probing(name, number)
+
+# Display tables
+print("\nSeparate Chaining:")
+for i, bucket in enumerate(seperate_chaining_table):
+    print(f"Index {i}: {bucket}")
+
+print("\nLinear Probing:")
+for i, key in enumerate(linear_probing_key):
+    if key is not None:
+        print(f"Index {i}: {key} -> {linear_probing_value[i]}")
+    else:
+        print(f"Index {i}: Empty")
+
+# Comparison counts
+sp_compare = 0
+lp_compare = 0
+
+for name in client_no.keys():
+    if search_seperate(name) is not None:
+        sp_compare += 1
+    if search_linear(name) is not None:
+        lp_compare += 1
+
+print(f"\nSeparate Chaining Comparisons: {sp_compare}")
+print(f"Linear Probing Comparisons: {lp_compare}")

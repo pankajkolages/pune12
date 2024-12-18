@@ -1,0 +1,194 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class Tree {
+    struct Node {
+        char key[10];
+        char meaning[10];
+        Node* left;
+        Node* right;
+    };
+
+public:
+    Node* root;
+
+    Tree(); 
+    void create();
+    void insert(Node* root, Node* newNode);
+    void inorder();
+    void inorderRec(Node* root);
+    void postorder();
+    void postorderRec(Node* root);
+    void deleteKeyword(char* key);
+    Node* deleteNode(Node* root, char* key);
+    Node* minValueNode(Node* root);
+};
+
+Tree::Tree() {
+    root = NULL;
+}
+
+// Create new keyword and meaning
+void Tree::create() {
+    Node* newNode = new Node;
+    newNode->left = newNode->right = NULL;
+
+    cout << "\nEnter the Keyword: ";
+    cin >> newNode->key;
+    cout << "Enter the Meaning of " << newNode->key << ": ";
+    cin >> newNode->meaning;
+
+    if (root == NULL) {
+        root = newNode;
+    } else {
+        insert(root, newNode);
+    }
+}
+
+// Insert a node in the BST
+void Tree::insert(Node* root, Node* newNode) {
+    if (strcmp(root->key, newNode->key) > 0) {
+        if (root->left == NULL) {
+            root->left = newNode;
+        } else {
+            insert(root->left, newNode);
+        }
+    } else {
+        if (root->right == NULL) {
+            root->right = newNode;
+        } else {
+            insert(root->right, newNode);
+        }
+    }
+}
+
+// Inorder traversal to display in ascending order
+void Tree::inorder() {
+    inorderRec(root);
+}
+
+// Recursive Inorder function
+void Tree::inorderRec(Node* root) {
+    if (root != NULL) {
+        inorderRec(root->left);
+        cout << "\n" << root->key << "\t" << root->meaning;
+        inorderRec(root->right);
+    }
+}
+
+// Postorder traversal to display in descending order
+void Tree::postorder() {
+    postorderRec(root);
+}
+
+// Recursive Postorder function
+void Tree::postorderRec(Node* root) {
+    if (root != NULL) {
+        postorderRec(root->right);
+        cout << "\n" << root->key << "\t" << root->meaning;
+        postorderRec(root->left);
+    }
+}
+
+// Delete function that calls recursive delete
+void Tree::deleteKeyword(char* key) {
+    root = deleteNode(root, key);
+}
+
+// Recursive function to delete a node
+Tree::Node* Tree::deleteNode(Node* root, char* key) {
+    if (root == NULL) {
+        return root;
+    }
+
+    // Search for the node to be deleted
+    if (strcmp(key, root->key) < 0) {
+        root->left = deleteNode(root->left, key);
+    } else if (strcmp(key, root->key) > 0) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node found, now delete it
+
+        // Case 1: No children
+        if (root->left == NULL && root->right == NULL) {
+            delete root;
+            return NULL;
+        }
+
+        // Case 2: One child
+        else if (root->left == NULL) {
+            Node* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == NULL) {
+            Node* temp = root->left;
+            delete root;
+            return temp;
+        }
+
+        // Case 3: Two children
+        else {
+            Node* temp = minValueNode(root->right);
+            strcpy(root->key, temp->key);
+            strcpy(root->meaning, temp->meaning);
+            root->right = deleteNode(root->right, temp->key);
+        }
+    }
+    return root;
+}
+
+// Find the node with minimum value
+Tree::Node* Tree::minValueNode(Node* root) {
+    Node* current = root;
+    while (current && current->left != NULL) {
+        current = current->left;
+    }
+    return current;
+}
+
+int main() {
+    Tree tree;
+    int ch;
+    char ans;
+    do {
+        cout << "\n***** Dictionary Operations *****";
+        cout << "\n1. Create\n2. Display\n3. Delete Keyword\n4. Exit";
+        cout << "\nEnter your choice: ";
+        cin >> ch;
+
+        switch (ch) {
+        case 1:
+            do {
+                tree.create();
+                cout << "Do you want to continue? (y/n): ";
+                cin >> ans;
+            } while (ans == 'y' || ans == 'Y');
+            break;
+
+        case 2:
+            cout << "\n1. Ascending\n2. Descending\nEnter your choice: ";
+            cin >> ch;
+            if (ch == 1) {
+                tree.inorder();
+            } else if (ch == 2) {
+                tree.postorder();
+            }
+            break;
+
+        case 3:
+            char keyword[10];
+            cout << "\nEnter the keyword to delete: ";
+            cin >> keyword;
+            tree.deleteKeyword(keyword);
+            break;
+
+        case 4:
+            break;
+        }
+        cout << "\nDo you want to continue? (y/n): ";
+        cin >> ans;
+    } while (ans == 'y' || ans == 'Y');
+
+    return 0;
+}

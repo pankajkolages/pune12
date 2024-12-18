@@ -1,0 +1,86 @@
+# Consider telephone book database of N clients.
+# Make use of a hash table implementation to quickly look up client‘s telephone number.
+# Make use of two collision handling techniques and compare them 
+# using number of comparisons required to find a set of telephone numbers
+
+class HashTableSeparateChaining:
+    def __init__(self, size):
+        self.size = size
+        self.table = [[] for _ in range(size)]
+
+    def hash_function(self, key):
+        return hash(key) % self.size
+
+    def insert(self, key, value):
+        index = self.hash_function(key)
+        self.table[index].append((key, value))
+
+    def search(self, key):
+        index = self.hash_function(key)
+        for k, v in self.table[index]:
+            if k == key:
+                return v
+        return None
+
+
+class HashTableLinearProbing:
+    def __init__(self, size):
+        self.size = size
+        self.keys = [None] * size
+        self.values = [None] * size
+
+    def hash_function(self, key):
+        return hash(key) % self.size
+
+    def insert(self, key, value):
+        index = self.hash_function(key)
+        while self.keys[index] is not None:
+            index = (index + 1) % self.size
+        self.keys[index] = key
+        self.values[index] = value
+
+    def search(self, key):
+        index = self.hash_function(key)
+        while self.keys[index] is not None:
+            if self.keys[index] == key:
+                return self.values[index]
+            index = (index + 1) % self.size
+        return None
+
+
+def compare_collision_handling(client_numbers, hashtable_size):
+    separate_chaining_table = HashTableSeparateChaining(hashtable_size)
+    linear_probing_table = HashTableLinearProbing(hashtable_size)
+    
+    # Inserting client numbers
+    for client, number in client_numbers.items():
+        separate_chaining_table.insert(client, number)
+        linear_probing_table.insert(client, number)
+    
+    # Searching for client numbers and counting comparisons
+    sc_comparisons = sum(separate_chaining_table.search(client) is not None for client in client_numbers)
+    lp_comparisons = sum(linear_probing_table.search(client) is not None for client in client_numbers)
+    
+    return sc_comparisons, lp_comparisons
+
+
+def main():
+    # Example client numbers
+    client_numbers = {
+        "Alice": "123-456-7890",
+        "Bob": "456-789-0123",
+        "Charlie": "789-012-3456",
+        "David": "012-345-6789",
+        "Eve": "345-678-9012"
+    }
+    hashtable_size = 10
+
+    # Comparing collision handling techniques
+    sc_comparisons, lp_comparisons = compare_collision_handling(client_numbers, hashtable_size)
+
+    print("Separate Chaining Comparisons:", sc_comparisons)
+    print("Linear Probing Comparisons:", lp_comparisons)
+
+
+if __name__ == "__main__":
+    main()

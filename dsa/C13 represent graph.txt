@@ -1,0 +1,278 @@
+/*
+Experiment 13 :
+    Represent a given grapg using adjacency matrix/list to perform DFS and using adjacency list to perform BFS.
+    Use the map of the area around the college as a graph. Identify the prominent land marks as nodes and perform DFS and BFS on that Adjecency List.
+*/
+
+#include <iostream>
+using namespace std;
+#define MAX 10
+#define TRUE 1
+#define FALSE 0
+
+// declaring an adjacency list for storing the graph
+class lgra
+{
+private:
+    struct node1
+    {
+        int vertex;
+        struct node1 *next;
+    };
+    node1 *head[MAX];
+    int visited[MAX];
+
+public:
+    // static int nodecount;
+    lgra();
+    void create();
+    void dfs(int);
+};
+
+// constructor
+lgra::lgra()
+{
+    int v1;
+    for (v1 = 0; v1 < MAX; v1++)
+        visited[v1] = FALSE;
+    for (v1 = 0; v1 < MAX; v1++)
+        head[v1] = NULL;
+}
+
+void lgra::create()
+{
+    int v1, v2;
+    char ans;
+    node1 *N, *first;
+    cout << "Enter the vertices no. beginning with 0 : ";
+    do
+    {
+        cout << "\nEnter the Edge of a graph : \n";
+        cin >> v1 >> v2;
+        if (v1 >= MAX || v2 >= MAX)
+            cout << "Invalid Vertex Value!!\n";
+        else
+        {
+            // creating link from v1 to v2
+            N = new node1;
+            if (N == NULL)
+                cout << "Insufficient Memory!!\n";
+            N->vertex = v2;
+            N->next = NULL;
+            first = head[v1];
+            if (first == NULL)
+                head[v1] = N;
+            else
+            {
+                while (first->next != NULL)
+                    first = first->next;
+                first->next = N;
+            }
+            // creating link from v2 to v1
+            N = new node1;
+            if (N == NULL)
+                cout << "Insufficient Memory!!\n";
+            N->vertex = v1;
+            N->next = NULL;
+            first = head[v2];
+            if (first == NULL)
+                head[v2] = N;
+            else
+            {
+                while (first->next != NULL)
+                    first = first->next;
+                first->next = N;
+            }
+        }
+        cout << "\n Want to add more edges?(y/n) : ";
+        cin >> ans;
+    } while (ans == 'y');
+}
+
+// dfs function
+void lgra::dfs(int v1)
+{
+    node1 *first;
+    cout << endl
+         << v1;
+    visited[v1] = TRUE;
+    first = head[v1];
+    while (first != NULL)
+        if (visited[first->vertex] == FALSE)
+            dfs(first->vertex);
+        else
+            first = first->next;
+}
+
+int main()
+{
+    int v1;
+    lgra g;
+
+    g.create();
+    cout << endl
+         << "Enter the vertex from where you want to traverse : ";
+    cin >> v1;
+    if (v1 >= MAX)
+        cout << "Invalid Vertex!!\n";
+    else
+    {
+        cout << "The Dfs of the graph : ";
+        g.dfs(v1);
+    }
+
+    return 0;
+}
+
+/* 
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+#include <string>
+using namespace std;
+
+class Graph {
+private:
+    unordered_map<string, vector<string>> adjList; // Adjacency list representation
+
+public:
+    void addEdge(string u, string v) {
+        adjList[u].push_back(v);
+        adjList[v].push_back(u); // Assuming undirected graph
+    }
+
+    void displayAdjList() {
+        for (auto &node : adjList) {
+            cout << node.first << " -> ";
+            for (string &neighbor : node.second) {
+                cout << neighbor << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    void DFS(string start) {
+        unordered_map<string, bool> visited;
+        cout << "DFS Traversal: ";
+        DFSUtil(start, visited);
+        cout << endl;
+    }
+
+    void BFS(string start) {
+        unordered_map<string, bool> visited;
+        queue<string> q;
+
+        visited[start] = true;
+        q.push(start);
+
+        cout << "BFS Traversal: ";
+        while (!q.empty()) {
+            string current = q.front();
+            q.pop();
+            cout << current << " ";
+
+            for (string &neighbor : adjList[current]) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    q.push(neighbor);
+                }
+            }
+        }
+        cout << endl;
+    }
+
+private:
+    void DFSUtil(string node, unordered_map<string, bool> &visited) {
+        visited[node] = true;
+        cout << node << " ";
+
+        for (string &neighbor : adjList[node]) {
+            if (!visited[neighbor]) {
+                DFSUtil(neighbor, visited);
+            }
+        }
+    }
+};
+
+int main() {
+    Graph g;
+    int edges;
+    int choice;
+    string start;
+    do {
+        cout << "\nGraph Operations Menu:\n";
+        cout << "1. Add edges and create graph\n";
+        cout << "2. Display adjacency list\n";
+        cout << "3. Perform DFS\n";
+        cout << "4. Perform BFS\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << "Enter the number of edges: ";
+            cin >> edges;
+
+            cout << "Enter the edges (format: node1 node2):\n";
+            for (int i = 0; i < edges; ++i) {
+                string u, v;
+                cin >> u >> v;
+                g.addEdge(u, v);
+            }
+            break;
+
+        case 2:
+            cout << "Adjacency List Representation:\n";
+            g.displayAdjList();
+            break;
+
+        case 3:
+            cout << "\nEnter the starting node for DFS: ";
+            cin >> start;
+            g.DFS(start);
+            break;
+
+        case 4:
+            cout << "\nEnter the starting node for BFS: ";
+            cin >> start;
+            g.BFS(start);
+            break;
+
+        case 5:
+            cout << "Exiting program.\n";
+            break;
+
+        default:
+            cout << "Invalid choice! Please try again.\n";
+        }
+    } while (choice != 5);
+
+    return 0;
+}
+
+*/
+
+/* Example Explanation:
+Nodes: Library, Cafeteria, Auditorium, Hostel, Sports Complex
+Edges: 
+- Library <-> Cafeteria
+- Library <-> Auditorium
+- Cafeteria <-> Hostel
+- Auditorium <-> Sports Complex
+- Hostel <-> Sports Complex
+
+1. Adjacency List:
+   Library -> Cafeteria Auditorium
+   Cafeteria -> Library Hostel
+   Auditorium -> Library Sports Complex
+   Hostel -> Cafeteria Sports Complex
+   Sports Complex -> Auditorium Hostel
+
+2. DFS from Library:
+   Output: Library -> Cafeteria -> Hostel -> Sports Complex -> Auditorium
+
+3. BFS from Library:
+   Output: Library -> Cafeteria -> Auditorium -> Hostel -> Sports Complex
+*/

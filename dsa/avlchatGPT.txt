@@ -1,0 +1,238 @@
+#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+class Node {
+public:
+    string key, meaning;
+    Node *left, *right;
+    int height;
+
+    Node(string k, string m)
+        : key(k), meaning(m), left(nullptr), right(nullptr), height(1) {}
+};
+
+class AVLDictionary {
+private:
+    Node *root;
+
+    int height(Node *n) {
+        return n ? n->height : 0;
+    }
+
+    int balanceFactor(Node *n) {
+        return n ? height(n->left) - height(n->right) : 0;
+    }
+
+    Node *rotateRight(Node *y) {
+        Node *x = y->left;
+        Node *T2 = x->right;
+
+        x->right = y;
+        y->left = T2;
+
+        y->height = 1 + max(height(y->left), height(y->right));
+        x->height = 1 + max(height(x->left), height(x->right));
+
+        return x;
+    }
+
+    Node *rotateLeft(Node *x) {
+        Node *y = x->right;
+        Node *T2 = y->left;
+
+        y->left = x;
+        x->right = T2;
+
+        x->height = 1 + max(height(x->left), height(x->right));
+        y->height = 1 + max(height(y->left), height(y->right));
+
+        return y;
+    }
+
+    Node *insert(Node *node, string key, string meaning) {
+        if (!node)
+            return new Node(key, meaning);
+
+        if (key < node->key)
+            node->left = insert(node->left, key, meaning);
+        else if (key > node->key)
+            node->right = insert(node->right, key, meaning);
+        else {
+            cout << "Keyword already exists.\n";
+            return node;
+        }
+
+        node->height = 1 + max(height(node->left), height(node->right));
+        int bf = balanceFactor(node);
+
+        if (bf > 1 && key < node->left->key)
+            return rotateRight(node);
+        if (bf < -1 && key > node->right->key)
+            return rotateLeft(node);
+        if (bf > 1 && key > node->left->key) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+        if (bf < -1 && key < node->right->key) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    Node *findMin(Node *node) {
+        while (node && node->left)
+            node = node->left;
+        return node;
+    }
+
+    Node *remove(Node *node, string key) {
+        if (!node) {
+            cout << "Keyword not found.\n";
+            return node;
+        }
+
+        if (key < node->key)
+            node->left = remove(node->left, key);
+        else if (key > node->key)
+            node->right = remove(node->right, key);
+        else {
+            if (!node->left || !node->right) {
+                Node *temp = node->left ? node->left : node->right;
+                delete node;
+                return temp;
+            }
+
+            Node *temp = findMin(node->right);
+            node->key = temp->key;
+            node->meaning = temp->meaning;
+            node->right = remove(node->right, temp->key);
+        }
+
+        node->height = 1 + max(height(node->left), height(node->right));
+        int bf = balanceFactor(node);
+
+        if (bf > 1 && balanceFactor(node->left) >= 0)
+            return rotateRight(node);
+        if (bf < -1 && balanceFactor(node->right) <= 0)
+            return rotateLeft(node);
+        if (bf > 1 && balanceFactor(node->left) < 0) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+        if (bf < -1 && balanceFactor(node->right) > 0) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    Node *find(Node *node, string key) {
+        if (!node)
+            return nullptr;
+        if (key == node->key)
+            return node;
+        return key < node->key ? find(node->left, key) : find(node->right, key);
+    }
+
+    void inorder(Node *node) {
+        if (node) {
+            inorder(node->left);
+            cout << node->key << ": " << node->meaning << "\n";
+            inorder(node->right);
+        }
+    }
+
+public:
+    AVLDictionary() : root(nullptr) {}
+
+    void addKeyword() {
+        string key, meaning;
+        cout << "Enter keyword: ";
+        cin >> key;
+        cout << "Enter meaning: ";
+        cin.ignore();
+        getline(cin, meaning);
+        root = insert(root, key, meaning);
+    }
+
+    void deleteKeyword() {
+        string key;
+        cout << "Enter keyword to delete: ";
+        cin >> key;
+        root = remove(root, key);
+    }
+
+    void display() {
+        if (!root)
+            cout << "Dictionary is empty.\n";
+        else
+            inorder(root);
+    }
+
+    void searchKeyword() {
+        string key;
+        cout << "Enter keyword to search: ";
+        cin >> key;
+        Node *result = find(root, key);
+        if (result)
+            cout << "Found: " << result->key << " - " << result->meaning << "\n";
+        else
+            cout << "Keyword not found.\n";
+    }
+
+    void updateKeyword() {
+        string key, newMeaning;
+        cout << "Enter keyword to update: ";
+        cin >> key;
+        Node *result = find(root, key);
+        if (result) {
+            cout << "Enter new meaning: ";
+            cin.ignore();
+            getline(cin, newMeaning);
+            result->meaning = newMeaning;
+            cout << "Keyword updated.\n";
+        } else {
+            cout << "Keyword not found.\n";
+        }
+    }
+};
+
+int main() {
+    AVLDictionary dict;
+    int choice;
+
+    do {
+        cout << "\n1. Add Keyword\n2. Delete Keyword\n3. Display Dictionary\n4. Search Keyword\n5. Update Keyword\n6. Exit\nEnter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            dict.addKeyword();
+            break;
+        case 2:
+            dict.deleteKeyword();
+            break;
+        case 3:
+            dict.display();
+            break;
+        case 4:
+            dict.searchKeyword();
+            break;
+        case 5:
+            dict.updateKeyword();
+            break;
+        case 6:
+            cout << "Exiting...\n";
+            break;
+        default:
+            cout << "Invalid choice.\n";
+        }
+    } while (choice != 6);
+
+    return 0;
+}
